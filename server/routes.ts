@@ -3,7 +3,6 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { createRepoAndPush, pushAllFiles } from "./github";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -32,37 +31,40 @@ export async function registerRoutes(
     }
   });
 
-  // GitHub API - Create repo
-  app.post('/api/github/create-repo', async (req, res) => {
-    try {
-      const { repoName } = req.body;
-      if (!repoName) {
-        return res.status(400).json({ message: "Repository name is required" });
+  // GitHub API routes - only in development
+  if (process.env.NODE_ENV === 'development') {
+    const { createRepoAndPush, pushAllFiles } = await import("./github");
+    
+    app.post('/api/github/create-repo', async (req, res) => {
+      try {
+        const { repoName } = req.body;
+        if (!repoName) {
+          return res.status(400).json({ message: "Repository name is required" });
+        }
+        
+        const result = await createRepoAndPush(repoName);
+        res.json(result);
+      } catch (err: any) {
+        console.error('GitHub error:', err);
+        res.status(500).json({ message: err.message || 'Failed to create repository' });
       }
-      
-      const result = await createRepoAndPush(repoName);
-      res.json(result);
-    } catch (err: any) {
-      console.error('GitHub error:', err);
-      res.status(500).json({ message: err.message || 'Failed to create repository' });
-    }
-  });
+    });
 
-  // GitHub API - Push all files
-  app.post('/api/github/push', async (req, res) => {
-    try {
-      const { owner, repo } = req.body;
-      if (!owner || !repo) {
-        return res.status(400).json({ message: "Owner and repo are required" });
+    app.post('/api/github/push', async (req, res) => {
+      try {
+        const { owner, repo } = req.body;
+        if (!owner || !repo) {
+          return res.status(400).json({ message: "Owner and repo are required" });
+        }
+        
+        const result = await pushAllFiles(owner, repo);
+        res.json(result);
+      } catch (err: any) {
+        console.error('GitHub push error:', err);
+        res.status(500).json({ message: err.message || 'Failed to push files' });
       }
-      
-      const result = await pushAllFiles(owner, repo);
-      res.json(result);
-    } catch (err: any) {
-      console.error('GitHub push error:', err);
-      res.status(500).json({ message: err.message || 'Failed to push files' });
-    }
-  });
+    });
+  }
 
   return httpServer;
 }
