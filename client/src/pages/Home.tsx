@@ -303,7 +303,7 @@ export default function Home() {
               <AlertTriangle className="w-4 h-4 inline mr-1 text-primary/70" />
               DISCLAIMER: This is a community token for entertainment purposes only. $RedWhale is a meme coin with no intrinsic value or expectation of financial return. There is no formal team or roadmap. The coin is completely useless and for entertainment purposes only.
             </p>
-            <p>&copy; 2024 $RedWhale. All rights reserved.</p>
+            <p>&copy; 2026 $RedWhale. All rights reserved.</p>
           </div>
         </div>
       </footer>
